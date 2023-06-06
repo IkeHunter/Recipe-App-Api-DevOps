@@ -26,4 +26,5 @@ RUN chown -R user:user /vol/
 RUN chmod -R 755 /vol/web
 USER user
 
+VOLUME /vol/web
 CMD ["entrypoint.sh"]
