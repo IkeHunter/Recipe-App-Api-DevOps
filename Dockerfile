@@ -16,7 +16,7 @@ RUN apk del .tmp-build-deps
 RUN mkdir /app
 WORKDIR /app
 COPY ./app /app
-COPY ./scripts /scripts
+COPY ./scripts/ /scripts/
 RUN chmod +x /scripts/*
 
 RUN mkdir -p /vol/web/media
