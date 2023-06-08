@@ -11,7 +11,8 @@ resource "aws_instance" "bastion" {            # instance created
   ami           = data.aws_ami.amazon_linux.id # data from above, gets ami id
   instance_type = "t2.micro"
 
-  tags = {
-    Name = "${local.prefix}-bastion" # draw from main.tf
-  }
+  tags = merge( # allows you to add new tag, merge with common_tags
+    local.common_tags,
+    map("Name", "${local.prefix}-bastion")
+  )
 }
