@@ -10,4 +10,8 @@ data "aws_ami" "amazon_linux" { # retrieving info from aws
 resource "aws_instance" "bastion" {            # instance created
   ami           = data.aws_ami.amazon_linux.id # data from above, gets ami id
   instance_type = "t2.micro"
+
+  tags = {
+    Name = "${local.prefix}-bastion" # draw from main.tf
+  }
 }
