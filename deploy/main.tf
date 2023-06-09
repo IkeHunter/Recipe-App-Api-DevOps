@@ -3,7 +3,7 @@ terraform {
     bucket         = "recipe-app-api-devops-ikedev"
     key            = "recipe-app.tfstate"
     region         = "us-east-1"
-    encrypt        = true
+    encrypt        = true # state is encrypted in s3
     dynamodb_table = "recipe-app-api-devops-tf-state-lock"
   }
 }
