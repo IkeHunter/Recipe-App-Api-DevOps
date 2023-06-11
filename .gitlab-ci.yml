@@ -59,14 +59,18 @@ Staging Plan: # push to staging first, test, then deploy from prod
     - terraform init
     - terraform workspace select staging || terraform workspace new staging  # either select or create workspace staging - then select (auto behavior)
     - terraform plan  # for info, can look back and see what was changed. optionally set this stage to manual to check plan and accept before moving on
-  rules: # same as above
+  rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(master|production)$/'
 
 Staging Apply: # push to staging first, test, then deploy from prod
   stage: Staging Apply
   script:
-    - echo "Run terraform apply for staging"
-  rules: # same as above
+    - cd deploy/  # each job is a fresh file system, so do this every time
+    - export TF_VAR_ecr_image_api=$ECR_REPO:$CI_COMMIT_SHORT_SHA  # variables also don't pass between jobs
+    - terraform init
+    - terraform workspace select staging  # plan job already ran, so staging will exist
+    - terraform apply -auto-approve  # won't ask if user is sure, it should be automated
+  rules:  # some people make this manual if they want to be extra safe
     - if: '$CI_COMMIT_BRANCH =~ /^(master|production)$/'
     
 Production Plan: # push to Production first, test, then deploy from prod
@@ -83,8 +87,12 @@ Production Plan: # push to Production first, test, then deploy from prod
 Production Apply: # push to Production first, test, then deploy from prod
   stage: Production Apply
   script:
-    - echo "Run terraform apply for Production"
-  rules: # same as above
+    - cd deploy/
+    - export TF_VAR_ecr_image_api=$ECR_REPO:$CI_COMMIT_SHORT_SHA
+    - terraform init
+    - terraform workspace select production
+    - terraform apply -auto-approve
+  rules:
     - if: '$CI_COMMIT_BRANCH == "production"'
       when: manual  # when job manually called
 
