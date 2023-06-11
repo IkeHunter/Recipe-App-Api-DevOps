@@ -99,7 +99,10 @@ Production Apply: # push to Production first, test, then deploy from prod
 Staging Destroy:
   stage: Destroy
   script:
-    - echo "Run Terraform destroy for staging"
+    - cd deploy/
+    - terraform init
+    - terraform workspace select staging
+    - terraform destroy -auto-approve  # since job is manual, terraform shouldn't ask for confirmation
   rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(master|production)$/'
       when: manual  # when job manually called
@@ -107,7 +110,10 @@ Staging Destroy:
 Production Destroy:
   stage: Destroy
   script:
-    - echo "Run Terraform destroy for Production"
+    - cd deploy/
+    - terraform init
+    - terraform workspace select production
+    - terraform destroy -auto-approve
   rules:
     - if: '$CI_COMMIT_BRANCH == "production"'
       when: manual  # when job manually called
