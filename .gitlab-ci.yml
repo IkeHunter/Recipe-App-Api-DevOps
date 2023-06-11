@@ -7,40 +7,40 @@ stages:
   - Production Apply  # apply tf
   - Destroy  # tasks for destroying
 
-Test and Link:
+Test and Lint:
   stage: Test and Lint
   script:
     - echo "Test and Lint"
-  rules: # if merge req target branch is main or production and again if main/production branch is committed
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(main|production)$/ || $CI_COMMIT_BRANCH =~ /^(main|production)$/'
+  rules: # if merge req target branch is master or production and again if master/production branch is committed
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(master|production)$/ || $CI_COMMIT_BRANCH =~ /^(master|production)$/'
 
 Validate Terraform:
   stage: Test and Lint
   script:
     - echo "Validate Terraform"
   rules: # same as above
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(main|production)$/ || $CI_COMMIT_BRANCH =~ /^(main|production)$/'
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(master|production)$/ || $CI_COMMIT_BRANCH =~ /^(master|production)$/'
 
 Build and Push:
   stage: Build and Push
   script:
     - echo "Build and push docker image"
-  rules: # only commit when commit to prod/main
-    - if: '$CI_COMMIT_BRANCH =~ /^(main|production)$/'
+  rules: # only commit when commit to prod/master
+    - if: '$CI_COMMIT_BRANCH =~ /^(master|production)$/'
 
 Staging Plan: # push to staging first, test, then deploy from prod
   stage: Staging Plan
   script:
     - echo "Run terraform plan for staging"
   rules: # same as above
-    - if: '$CI_COMMIT_BRANCH =~ /^(main|production)$/'
+    - if: '$CI_COMMIT_BRANCH =~ /^(master|production)$/'
 
 Staging Apply: # push to staging first, test, then deploy from prod
   stage: Staging Apply
   script:
     - echo "Run terraform apply for staging"
   rules: # same as above
-    - if: '$CI_COMMIT_BRANCH =~ /^(main|production)$/'
+    - if: '$CI_COMMIT_BRANCH =~ /^(master|production)$/'
     
 Production Plan: # push to Production first, test, then deploy from prod
   stage: Production Plan
@@ -55,13 +55,14 @@ Production Apply: # push to Production first, test, then deploy from prod
     - echo "Run terraform apply for Production"
   rules: # same as above
     - if: '$CI_COMMIT_BRANCH == "production"'
+      when: manual  # when job manually called
 
 Staging Destroy:
   stage: Destroy
   script:
     - echo "Run Terraform destroy for staging"
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^(main|production)$/'
+    - if: '$CI_COMMIT_BRANCH =~ /^(master|production)$/'
       when: manual  # when job manually called
       
 Production Destroy:
