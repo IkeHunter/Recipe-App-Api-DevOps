@@ -36,9 +36,18 @@ Validate Terraform:
     - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(master|production)$/ || $CI_COMMIT_BRANCH =~ /^(master|production)$/'
 
 Build and Push:
+  image: docker:19.03.5
+  services:
+    - docker:19.03.5-dind  # docker in docker
   stage: Build and Push
   script:
-    - echo "Build and push docker image"
+    - apk add python3
+    - pip3 install awscli
+    - docker build --compress -t $ECR_REPO:$CI_COMMIT_SHORT_SHA .  # builds docker image, make small, tag image with registry name:first 8 characters of commit
+    - $(aws ecr get-login --no-include-email --region us-east-1)  # gets docker temp login command, authenticate with docker and aws
+    - docker push $ECR_REPO:$CI_COMMIT_SHORT_SHA  # push to ecr
+    - docker tag $ECR_REPO:$CI_COMMIT_SHORT_SHA $ECR_REPO:latest  # add second tag with :latest
+    - docker push $ECR_REPO:latest  # push with latest tag
   rules: # only commit when commit to prod/master
     - if: '$CI_COMMIT_BRANCH =~ /^(master|production)$/'
 
