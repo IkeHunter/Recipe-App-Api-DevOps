@@ -1,0 +1,73 @@
+stages:
+  - Test and Lint  # unit tests
+  - Build and Push  # build docker, push to ecr
+  - Staging Plan  # run tf plan
+  - Staging Apply  # apply tf
+  - Production Plan  # run tf plan
+  - Production Apply  # apply tf
+  - Destroy  # tasks for destroying
+
+Test and Link:
+  stage: Test and Lint
+  script:
+    - echo "Test and Lint"
+  rules: # if merge req target branch is main or production and again if main/production branch is committed
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(main|production)$/ || $CI_COMMIT_BRANCH =~ /^(main|production)$/'
+
+Validate Terraform:
+  stage: Test and Lint
+  script:
+    - echo "Validate Terraform"
+  rules: # same as above
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(main|production)$/ || $CI_COMMIT_BRANCH =~ /^(main|production)$/'
+
+Build and Push:
+  stage: Build and Push
+  script:
+    - echo "Build and push docker image"
+  rules: # only commit when commit to prod/main
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|production)$/'
+
+Staging Plan: # push to staging first, test, then deploy from prod
+  stage: Staging Plan
+  script:
+    - echo "Run terraform plan for staging"
+  rules: # same as above
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|production)$/'
+
+Staging Apply: # push to staging first, test, then deploy from prod
+  stage: Staging Apply
+  script:
+    - echo "Run terraform apply for staging"
+  rules: # same as above
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|production)$/'
+    
+Production Plan: # push to Production first, test, then deploy from prod
+  stage: Production Plan
+  script:
+    - echo "Run terraform plan for Production"
+  rules: # only run when commiting to prod
+    - if: '$CI_COMMIT_BRANCH == "production"'
+
+Production Apply: # push to Production first, test, then deploy from prod
+  stage: Production Apply
+  script:
+    - echo "Run terraform apply for Production"
+  rules: # same as above
+    - if: '$CI_COMMIT_BRANCH == "production"'
+
+Staging Destroy:
+  stage: Destroy
+  script:
+    - echo "Run Terraform destroy for staging"
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|production)$/'
+      when: manual  # when job manually called
+      
+Production Destroy:
+  stage: Destroy
+  script:
+    - echo "Run Terraform destroy for Production"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "production"'
+      when: manual  # when job manually called
