@@ -1,3 +1,10 @@
+image:
+  name: hashicorp/terraform:0.12.21
+  entrypoint:  # overrides entrypoint to work with gitlab ci-cd
+    - '/usr/bin/env'
+    - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+
 stages:
   - Test and Lint  # unit tests
   - Build and Push  # build docker, push to ecr
@@ -8,16 +15,23 @@ stages:
   - Destroy  # tasks for destroying
 
 Test and Lint:
+  image: docker:19.03.5
+  services:
+    - docker:19.03.5-dind  # docker in docker
   stage: Test and Lint
   script:
-    - echo "Test and Lint"
+    - apk add --update docker-compose
+    - docker-compose run --rm app sh -c "python manage.py wait_for_db && python manage.py test && flake8"
   rules: # if merge req target branch is master or production and again if master/production branch is committed
     - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(master|production)$/ || $CI_COMMIT_BRANCH =~ /^(master|production)$/'
 
 Validate Terraform:
   stage: Test and Lint
   script:
-    - echo "Validate Terraform"
+    - cd deploy/
+    - terraform init -backend=false  # initialize tf first for provider code, don't need aws stuff (backend=false)
+    - terraform validate
+    - terraform fmt -check  # just show feedback, don't apply formating. fail if there's feedback
   rules: # same as above
     - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^(master|production)$/ || $CI_COMMIT_BRANCH =~ /^(master|production)$/'
 
