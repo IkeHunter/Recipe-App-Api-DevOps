@@ -44,7 +44,7 @@ Build and Push:
     - apk add python3
     - pip3 install awscli
     - docker build --compress -t $ECR_REPO:$CI_COMMIT_SHORT_SHA .  # builds docker image, make small, tag image with registry name:first 8 characters of commit
-    - $(aws ecr get-login --no-include-email --region us-east-1)  # gets docker temp login command, authenticate with docker and aws
+    - $(aws ecr get-login --no-include-email --region us-east-1)  # gets docker temp login command, authenticate with docker to aws
     - docker push $ECR_REPO:$CI_COMMIT_SHORT_SHA  # push to ecr
     - docker tag $ECR_REPO:$CI_COMMIT_SHORT_SHA $ECR_REPO:latest  # add second tag with :latest
     - docker push $ECR_REPO:latest  # push with latest tag
@@ -54,7 +54,11 @@ Build and Push:
 Staging Plan: # push to staging first, test, then deploy from prod
   stage: Staging Plan
   script:
-    - echo "Run terraform plan for staging"
+    - cd deploy/
+    - export TF_VAR_ecr_image_api=$ECR_REPO:$CI_COMMIT_SHORT_SHA  # uses same tag ad defined in build/push, sets to new var (TF_VAR_...) and passes it to terraform
+    - terraform init
+    - terraform workspace select staging || terraform workspace new staging  # either select or create workspace staging - then select (auto behavior)
+    - terraform plan  # for info, can look back and see what was changed. optionally set this stage to manual to check plan and accept before moving on
   rules: # same as above
     - if: '$CI_COMMIT_BRANCH =~ /^(master|production)$/'
 
@@ -68,7 +72,11 @@ Staging Apply: # push to staging first, test, then deploy from prod
 Production Plan: # push to Production first, test, then deploy from prod
   stage: Production Plan
   script:
-    - echo "Run terraform plan for Production"
+    - cd deploy/
+    - export TF_VAR_ecr_image_api=$ECR_REPO:$CI_COMMIT_SHORT_SHA
+    - terraform init
+    - terraform workspace select production || terraform workspace new production
+    - terraform plan
   rules: # only run when commiting to prod
     - if: '$CI_COMMIT_BRANCH == "production"'
 
