@@ -22,3 +22,5 @@ locals {
     ManagedBy   = "Terraform"
   }
 }
+
+data "aws_region" "current" {} # dont need to assign anything to it
