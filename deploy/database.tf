@@ -32,8 +32,8 @@ resource "aws_db_instance" "main" {                       # defines main db inst
   allocated_storage       = 20                            # disk space: 20gb, this effects cost
   storage_type            = "gp2"                         # "general purpose 2", smaller simplier storage
   engine                  = "postgres"                    # defines type of db
-  engine_version          = "14.2"                        # postgres version
-  instance_class          = "db.t3.micro"                 # type of db server, this is smaller and cheaper
+  engine_version          = "11.16"                       # postgres version
+  instance_class          = "db.t2.micro"                 # type of db server, this is smaller and cheaper
   db_subnet_group_name    = aws_db_subnet_group.main.name # connects subnet group
   password                = var.db_password               # local var password
   username                = var.db_username               # local var username
