@@ -10,6 +10,7 @@ data "aws_ami" "amazon_linux" { # retrieving info from aws
 resource "aws_instance" "bastion" {            # instance created
   ami           = data.aws_ami.amazon_linux.id # data from above, gets ami id
   instance_type = "t2.micro"
+  user_data     = file("./templates/bastion/user-data.sh")
 
   tags = merge( # allows you to add new tag, merge with common_tags
     local.common_tags,
