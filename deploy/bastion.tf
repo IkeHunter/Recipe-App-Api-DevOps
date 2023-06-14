@@ -32,8 +32,51 @@ resource "aws_instance" "bastion" {                   # instance created
   key_name             = var.bastion_key_name
   subnet_id            = aws_subnet.public_a.id # doesn't need to run on all subnets, so just select one
 
+  vpc_security_group_ids = [
+    aws_security_group.bastion.id
+  ]
+
   tags = merge( # allows you to add new tag, merge with common_tags
     local.common_tags,
     map("Name", "${local.prefix}-bastion")
   )
+}
+
+resource "aws_security_group" "bastion" {
+  description = "Control bastion inbound and outbound access"
+  name        = "${local.prefix}-bastion"
+  vpc_id      = aws_vpc.main.id
+
+  ingress { # inbound on port 22, or ssh, only
+    protocol    = "tcp"
+    from_port   = 22
+    to_port     = 22
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress { # outbound via https
+    protocol    = "tcp"
+    from_port   = 443
+    to_port     = 443
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress { # outbound via http
+    protocol    = "tcp"
+    from_port   = 80
+    to_port     = 80
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress { # outbound via postgres, only accessed by private a/b cidr_block
+    protocol  = "tcp"
+    from_port = 5432
+    to_port   = 5432
+    cidr_blocks = [
+      aws_subnet.private_a.cidr_block,
+      aws_subnet.private_b.cidr_block,
+    ]
+  }
+
+  tags = local.common_tags
 }
