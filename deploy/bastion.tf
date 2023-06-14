@@ -29,6 +29,8 @@ resource "aws_instance" "bastion" {                   # instance created
   instance_type        = "t2.micro"
   user_data            = file("./templates/bastion/user-data.sh")
   iam_instance_profile = aws_iam_instance_profile.bastion.name
+  key_name             = var.bastion_key_name
+  subnet_id            = aws_subnet.public_a.id # doesn't need to run on all subnets, so just select one
 
   tags = merge( # allows you to add new tag, merge with common_tags
     local.common_tags,

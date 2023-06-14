@@ -17,3 +17,7 @@ variable "db_username" {
 variable "db_password" {
   description = "Password for the RDS postgres instance"
 }
+
+variable "bastion_key_name" {
+  default = "recipe-app-api-devops-bastion" # same name as set up in aws console ec2 key pairs
+}
