@@ -21,3 +21,17 @@ variable "db_password" {
 variable "bastion_key_name" {
   default = "recipe-app-api-devops-bastion" # same name as set up in aws console ec2 key pairs
 }
+
+variable "ecr_image_api" {
+  description = "ECR image for API"
+  default     = "178537739852.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-devops:latest" # pull from latest tag
+}
+
+variable "ecr_image_proxy" {
+  description = "ECR image for proxy"
+  default     = "178537739852.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-proxy:latest"
+}
+
+variable "django_secret_key" {
+  description = "Secret key for Django app"
+}
