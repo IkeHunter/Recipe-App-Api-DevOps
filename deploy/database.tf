@@ -23,7 +23,8 @@ resource "aws_security_group" "rds" {
     to_port   = 5432
 
     security_groups = [
-      aws_security_group.bastion.id # only resources with this group can access
+      aws_security_group.bastion.id,    # only resources with this group can access
+      aws_security_group.ecs_service.id # allow access from ecs service
     ]
   }
 
