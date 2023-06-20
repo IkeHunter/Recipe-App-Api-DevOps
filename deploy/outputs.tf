@@ -6,3 +6,7 @@ output "db_host" {
 output "bastion_host" {
   value = aws_instance.bastion.public_dns # public dns name of bastion host
 }
+
+output "api_endpoint" {
+  value = aws_lb.api.dns_name # outputs dns name to access app
+}
