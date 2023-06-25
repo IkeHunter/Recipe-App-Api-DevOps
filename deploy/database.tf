@@ -33,7 +33,7 @@ resource "aws_security_group" "rds" {
 
 resource "aws_db_instance" "main" {                       # defines main db instance (rds)
   identifier              = "${local.prefix}-db"          # instance name
-  name                    = "recipe"                      # db name
+  db_name                 = "recipe"                      # db name
   allocated_storage       = 20                            # disk space: 20gb, this effects cost
   storage_type            = "gp2"                         # "general purpose 2", smaller simplier storage
   engine                  = "postgres"                    # defines type of db
