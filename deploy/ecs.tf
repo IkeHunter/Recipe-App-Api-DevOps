@@ -44,16 +44,17 @@ data "template_file" "api_container_definitions" {
   template = file("./templates/ecs/container-definitions.json.tpl")
 
   vars = {
-    app_image                = var.ecr_image_api
-    proxy_image              = var.ecr_image_proxy
-    django_secret_key        = var.django_secret_key
-    db_host                  = aws_db_instance.main.address
-    db_name                  = aws_db_instance.main.name
-    db_user                  = aws_db_instance.main.username
-    db_pass                  = aws_db_instance.main.password
-    log_group_name           = aws_cloudwatch_log_group.ecs_task_logs.name
-    log_group_region         = data.aws_region.current.name
-    allowed_hosts            = aws_lb.api.dns_name
+    app_image         = var.ecr_image_api
+    proxy_image       = var.ecr_image_proxy
+    django_secret_key = var.django_secret_key
+    db_host           = aws_db_instance.main.address
+    db_name           = aws_db_instance.main.name
+    db_user           = aws_db_instance.main.username
+    db_pass           = aws_db_instance.main.password
+    log_group_name    = aws_cloudwatch_log_group.ecs_task_logs.name
+    log_group_region  = data.aws_region.current.name
+    # allowed_hosts            = aws_lb.api.dns_name
+    allowed_hosts            = aws_route53_record.app.fqdn # point to custom domain
     s3_storage_bucket_name   = aws_s3_bucket.app_public_files.bucket
     s3_storage_bucket_region = data.aws_region.current.name
   }
@@ -130,6 +131,8 @@ resource "aws_ecs_service" "api" {
     container_name   = "proxy"
     container_port   = 8000
   }
+
+  depends_on = [aws_lb_listener.api_https] # force https to configure before ecs service
 }
 
 data "template_file" "ecs_s3_write_policy" { # pull in policy template

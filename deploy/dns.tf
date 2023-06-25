@@ -22,7 +22,7 @@ resource "aws_acm_certificate" "cert" {
   }
 }
 
-resource "aws_route53_record" "cert_validation" {                                     # create validation record to validate ssl
+resource "aws_route53_record" "cert_validation" {                                              # create validation record to validate ssl
   name    = tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_name # based on output
   type    = tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_type # based on output
   zone_id = data.aws_route53_zone.zone.zone_id
