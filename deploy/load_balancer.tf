@@ -31,8 +31,27 @@ resource "aws_lb_listener" "api" {   # entrypoint to lb
   protocol          = "HTTP"         # protocol to make request over
 
   default_action {
-    type             = "forward"                   # forward request to target group
-    target_group_arn = aws_lb_target_group.api.arn # to this target group
+    type = "redirect" # forward request to target group
+    # target_group_arn = aws_lb_target_group.api.arn # to this target group, this was needed before https
+
+    redirect { # redirect http to https
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+resource "aws_lb_listener" "api_https" { # create separate listener for https
+  load_balancer_arn = aws_lb.api.arn
+  port              = 443
+  protocol          = "HTTPS"
+
+  certificate_arn = aws_acm_certificate_validation.cert.certificate_arn # validation is last step, so get arn from there
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.api.arn
   }
 }
 
@@ -45,6 +64,13 @@ resource "aws_security_group" "lb" {
     protocol    = "tcp"
     from_port   = 80
     to_port     = 80
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress { # add after config https
+    protocol    = "tcp"
+    from_port   = 443
+    to_port     = 443
     cidr_blocks = ["0.0.0.0/0"]
   }
 
