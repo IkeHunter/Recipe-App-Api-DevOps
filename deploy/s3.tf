@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "app_public_files" {
-  bucket        = "${local.prefix}-files"
+  bucket_prefix = "${local.prefix}-files"
   force_destroy = true # allows tf to destroy
 }
 
